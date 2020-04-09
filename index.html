@@ -1,0 +1,56 @@
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script>
+      jQuery(document).ready(function($) {
+        geoip_detect.get_info().then(function(record) {
+          if (record.error()) {
+            console.error('WARNING Geodata Error:' + record.error() );
+            $('.geo-error').text(record.error());
+          }
+
+          // Debug: Show raw data of record. (Warning: No property in this object is guaranteed to exist.)
+          // console.log('Record', record.data);
+
+          // If no locales are given, use the website language
+          $('.geo-continent').text(record.get('continent')); 
+
+          // Second parameter is the default value if the property value is empty or non-existent. For example, the IP might be from a satellite connection.
+          $('.geo-continent').text(record.get('continent', 'Weird: no country detected.'));
+
+          // Return the German name of the country, if not available, use English
+          $('.geo-country').text(record.get_with_locales('country', ['de']));
+
+          // Return the German name of the country, if not available, show "default text"
+          $('.geo-country-de').text(record.get('country.names.de', 'default text'));
+
+          // Try French first, then German, then English. The pseudo-property "name" is also supported ('city' would result in the same return value).
+          $('.geo-city').text(record.get_with_locales('city.name', ['fr', 'de', 'en'], 'No city detected.'));
+
+          // The same property names can be used as in the shortcode syntax 
+          $('.geo-city-id').text(record.get('city.geoname_id'));
+          $('.geo-ip').text(record.get('traits.ip_address'));
+
+        });
+
+        // This will return the same JS promise as above, so that this will not result in a second AJAX request.
+        geoip_detect.get_info().then(function(record) {
+          $('.geo-country-2').text(record.get_with_locales('country', ['en']));
+        }); 
+
+      });
+    </script>
+</head>
+<body>
+ <ul>
+    <li>Continent: <span class="geo-continent"></span></li>
+    <li>Country (de): <span class="geo-country"></span></li>
+    <li>Country (de): <span class="geo-country-de"></span></li>
+    <li>City (fr,de,en): <span class="geo-city"></span></li>
+    <li>City-Id: <span class="geo-city-id"></span></li>
+    <li>IP: <span class="geo-ip"></span></li>
+    <li>Error: <span class="geo-error"></span></li>
+    <li>Country (en): <span class="geo-country-2"></span></li>
+ </ul>
+</body>
+</html>
